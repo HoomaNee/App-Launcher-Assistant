@@ -2,7 +2,6 @@ apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services' //for firebase core
 apply plugin: 'com.google.firebase.appdistribution' // firebase app distribution
 apply plugin: 'com.google.firebase.crashlytics' //firebase crash reporting
-apply plugin: 'com.github.triplet.play' //play publisher
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
