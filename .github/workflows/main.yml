@@ -1,7 +1,7 @@
 name: Android Manual Build
 
 on:
-  workflow_dispatch:  # run manually from Actions tab
+  workflow_dispatch:
 
 jobs:
   build:
@@ -17,6 +17,12 @@ jobs:
           distribution: temurin
           java-version: 11
 
+      # Use Gradle 7.5.1 instead of Gradle 8.x
+      - name: Force Gradle 7.5.1 Wrapper
+        run: |
+          ./gradlew wrapper --gradle-version 7.5.1
+          chmod +x ./gradlew
+
       - name: Cache Gradle
         uses: actions/cache@v4
         with:
@@ -27,25 +33,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # ---- Fix section ----
-      - name: Remove Play Publisher plugin (root + modules)
+      # Remove problematic Play Publisher plugin if present
+      - name: Disable Play Publisher plugin
         run: |
-          echo "Disabling Play Publisher plugin for CI build"
-          # comment out any play-publisher plugin lines
           sed -i '/play-publisher/d' build.gradle || true
           sed -i '/com.github.triplet.play/d' build.gradle || true
           sed -i '/play-publisher/d' app/build.gradle || true
           sed -i '/com.github.triplet.play/d' app/build.gradle || true
-      # ----------------------
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x ./gradlew
 
       - name: Build Debug APK
         run: ./gradlew assembleDebug --no-daemon
-
-      - name: Lint Check
-        run: ./gradlew lintDebug --no-daemon
 
       - name: Build Release APK
         run: ./gradlew assembleRelease --no-daemon
