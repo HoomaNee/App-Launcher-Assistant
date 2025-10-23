@@ -17,9 +17,9 @@ jobs:
           distribution: temurin
           java-version: 11
 
-      - name: Use Gradle 7.5.1
+      - name: Prepare Gradle wrapper (Gradle 6.5)
         run: |
-          ./gradlew wrapper --gradle-version 7.5.1
+          ./gradlew wrapper --gradle-version 6.5
           chmod +x ./gradlew
 
       - name: Cache Gradle
@@ -32,22 +32,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Patch Gradle files
+      - name: Remove Play Publisher plugin from app/build.gradle
         run: |
-          # Remove any reference to the Play Publisher plugin
           sed -i '/com.github.triplet.play/d' app/build.gradle || true
-          sed -i '/com.github.triplet.play/d' build.gradle || true
           sed -i '/play-publisher/d' app/build.gradle || true
-          sed -i '/play-publisher/d' build.gradle || true
-
-          # Ensure compileSdkVersion exists
-          if ! grep -q "compileSdkVersion" app/build.gradle; then
-            echo "⚙️ Adding compileSdkVersion 33"
-            sed -i '/android\s*{/a\    compileSdkVersion 33' app/build.gradle
-          fi
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --no-daemon
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
