@@ -17,8 +17,7 @@ jobs:
           distribution: temurin
           java-version: 11
 
-      # Use Gradle 7.5.1 instead of Gradle 8.x
-      - name: Force Gradle 7.5.1 Wrapper
+      - name: Use Gradle 7.5.1
         run: |
           ./gradlew wrapper --gradle-version 7.5.1
           chmod +x ./gradlew
@@ -33,24 +32,25 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # Remove problematic Play Publisher plugin if present
-      - name: Disable Play Publisher plugin
+      - name: Patch Gradle files
         run: |
-          sed -i '/play-publisher/d' build.gradle || true
+          # Remove any reference to the Play Publisher plugin
+          sed -i '/com.github.triplet.play/d' app/build.gradle || true
           sed -i '/com.github.triplet.play/d' build.gradle || true
           sed -i '/play-publisher/d' app/build.gradle || true
-          sed -i '/com.github.triplet.play/d' app/build.gradle || true
+          sed -i '/play-publisher/d' build.gradle || true
+
+          # Ensure compileSdkVersion exists
+          if ! grep -q "compileSdkVersion" app/build.gradle; then
+            echo "⚙️ Adding compileSdkVersion 33"
+            sed -i '/android\s*{/a\    compileSdkVersion 33' app/build.gradle
+          fi
 
       - name: Build Debug APK
         run: ./gradlew assembleDebug --no-daemon
 
-      - name: Build Release APK
-        run: ./gradlew assembleRelease --no-daemon
-
-      - name: Upload APKs as Artifacts
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-launcher-assistant-apks
-          path: |
-            app/build/outputs/apk/debug/*.apk
-            app/build/outputs/apk/release/*.apk
+          name: app-debug
+          path: app/build/outputs/apk/debug/*.apk
