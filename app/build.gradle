@@ -16,14 +16,7 @@ android {
         multiDexEnabled true
         versionName "1.5"
     }
-    signingConfigs {
-        release {
-            storeFile file($keystore_ala_storeFile)
-            storePassword $keystore_ala_storePassword
-            keyAlias $keystore_ala_keyAlias
-            keyPassword $keystore_ala_keyPassword
-        }
-    }
+}
     play {
         serviceAccountCredentials = file("$rootDir/../secrets/play_distribution_service_credentials.json")
         track = "beta"
@@ -32,7 +25,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
+            // no signingConfig
             firebaseAppDistribution {
                 releaseNotesFile = "$rootDir/app/firebase_distribution_release_notes.txt"
                 groups = "ala_testers"
